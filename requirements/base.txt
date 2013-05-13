@@ -1,0 +1,6 @@
+Django
+bpython
+django-braces
+django-model-utils
+logutils
+South
