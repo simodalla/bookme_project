@@ -16,3 +16,7 @@ DATABASES = {
         "PORT": "",
     },
 }
+
+INSTALLED_APPS += (
+    'bookme',
+)
