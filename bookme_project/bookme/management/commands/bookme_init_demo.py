@@ -1,5 +1,7 @@
 # -*- coding: iso-8859-1 -*-
 
+from datetime import date, timedelta
+
 from django.core.management.base import BaseCommand, CommandError
 
 from ...models import Calendar, BookingType, DailySlotTimePattern, DAYS
@@ -26,7 +28,11 @@ class Command(BaseCommand):
                       (DAYS.fr, '11:00', '13:00'), ]
         for day, start, end in dstps_data:
             dstp, created = DailySlotTimePattern.objects.get_or_create(
-                calendar=calendar, day=day, start=start, end=end)
+                calendar=calendar, day=day, start_time=start,
+                defaults={'end_time': end})
+
+        # calendar.create_slot_times(date(2013, 5, 6),
+        #                            date.today() + timedelta(days=7))
 
 
 

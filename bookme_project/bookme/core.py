@@ -19,10 +19,16 @@ def get_range_days(start_date, end_date):
         raise ValueError('start_date and end_date must be dates of'
                          ' same year')
 
-    days = []
+    # print(range(start_date.month, end_date.month + 1))
+    c = calendar.Calendar()
+    if start_date.month == end_date.month:
+        return [date_obj for date_obj in c.itermonthdates(2013,
+                                                          start_date.month)
+                if ((date_obj.month == start_date.month)
+                    and (start_date.day <= date_obj.day <= end_date.day))]
 
+    days = []
     for month in range(start_date.month, end_date.month + 1):
-        c = calendar.Calendar()
         month_days = [date_obj for date_obj in c.itermonthdates(2013, month)
                       if (date_obj.month == month)]
         if month == start_date.month:
