@@ -3,9 +3,7 @@
 from datetime import datetime, timedelta
 
 from django.core.urlresolvers import reverse
-from django.contrib.auth.models import User
 from django.db import models
-from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from model_utils import Choices
@@ -29,8 +27,6 @@ class Calendar(TimeStampedModel):
         verbose_name=_('slot length'), default=30,
         help_text=_('default length in minutes of  slot time.'))
 
-    objects = models.Manager()
-
     class Meta:
         verbose_name = _('calendar')
         verbose_name_plural = _('calendars')
@@ -38,35 +34,6 @@ class Calendar(TimeStampedModel):
 
     def __unicode__(self):
         return '{} {}'.format(self.__class__.__name__, self.name)
-
-    def create_slot_times(self, start_date, end_date):
-        try:
-            days = get_week_map_by_weekday(
-                get_range_days(start_date, end_date))
-        except Exception as e:
-            raise e
-        if self.dailyslottimepattern_set.count() == 0:
-            raise ValueError("{} has no related DailySlotTimePattern "
-                             "objects".format(self))
-        count = 0
-        for pattern in self.dailyslottimepattern_set.all():
-            for day in days[str(pattern.day)]:
-                cache_start_datetime = datetime.combine(day, pattern.start_time)
-                end_datetime = datetime.combine(day, pattern.end_time)
-                while (((end_datetime - cache_start_datetime).seconds/60)
-                        >= self.slot_length):
-                    start_slot = cache_start_datetime
-                    end_slot = cache_start_datetime + timedelta(
-                        minutes=self.slot_length)
-                    slot, created = self.slottime_set.get_or_create(
-                        day=day,
-                        start_time=start_slot.strftime('%H:%M'),
-                        end_time=end_slot.strftime('%H:%M'))
-                    if created:
-                        count += 1
-                    # print('{}--{}'.format(start_slot, end_slot))
-                    cache_start_datetime = end_slot
-        return count
 
     def daily_slot_time_patterns(self):
         return '<br >'.join(
@@ -130,6 +97,35 @@ class SlotTimesGeneration(TimeStampedModel):
         verbose_name = _('slot times creation')
         verbose_name_plural = _('slot times creations')
         unique_together = ('calendar', 'start_date', 'end_date')
+
+    def create_slot_times(self):
+        try:
+            days = get_week_map_by_weekday(
+                get_range_days(self.start_date, self.end_date))
+        except Exception as e:
+            raise e
+        if self.calendar.dailyslottimepattern_set.count() == 0:
+            raise ValueError("{} has no related DailySlotTimePattern "
+                             "objects".format(self.calendar))
+        count = 0
+        for pattern in self.calendar.dailyslottimepattern_set.all():
+            for day in days[str(pattern.day)]:
+                cache_start_datetime = datetime.combine(day, pattern.start_time)
+                end_datetime = datetime.combine(day, pattern.end_time)
+                while (((end_datetime - cache_start_datetime).seconds/60)
+                        >= self.calendar.slot_length):
+                    start_slot = cache_start_datetime
+                    end_slot = cache_start_datetime + timedelta(
+                        minutes=self.calendar.slot_length)
+                    slot, created = self.calendar.slottime_set.get_or_create(
+                        day=day,
+                        start_time=start_slot.strftime('%H:%M'),
+                        end_time=end_slot.strftime('%H:%M'))
+                    if created:
+                        count += 1
+                    # print('{}--{}'.format(start_slot, end_slot))
+                    cache_start_datetime = end_slot
+        return count
 
 
 class SlotTime(TimeStampedModel):

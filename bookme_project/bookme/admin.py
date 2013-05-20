@@ -4,6 +4,7 @@ from django.contrib import admin
 
 from .models import (BookingType, Calendar, DailySlotTimePattern, SlotTime,
                      SlotTimesGeneration)
+from .forms import SlotTimesGenerationForm
 
 
 class BookingTypeInline(admin.TabularInline):
@@ -34,6 +35,7 @@ class CalendarAdmin(admin.ModelAdmin):
 
 
 class SlotTimesGenerationAdmin(admin.ModelAdmin):
+    form = SlotTimesGenerationForm
     list_display = ['pk', 'calendar', 'created', 'start_date', 'end_date']
     list_filter = ['calendar']
     list_per_page = 20

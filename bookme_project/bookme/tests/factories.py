@@ -57,3 +57,54 @@ class AdminFactory(UserFactory):
     password = 'admin'
     email = 'admin@{}'.format(DOMAIN)
     is_superuser = True
+
+
+class DailySlotTimePatternFactory(factory.DjangoModelFactory):
+    FACTORY_FOR = models.DailySlotTimePattern
+    FACTORY_DJANGO_GET_OR_CREATE = ('calendar', 'day', 'start_time')
+
+
+class BookingTypeFactory(factory.DjangoModelFactory):
+    FACTORY_FOR = models.BookingType
+    FACTORY_DJANGO_GET_OR_CREATE = ('calendar', 'name')
+
+    name = factory.Sequence(lambda n: 'booking type {}'.format(n))
+
+
+class CalendarFactory(factory.DjangoModelFactory):
+    FACTORY_FOR = models.Calendar
+    FACTORY_DJANGO_GET_OR_CREATE = ('name',)
+
+    name = 'simple demo calendar'
+    description = factory.LazyAttribute(
+        lambda obj: 'description of {}'.format(obj.name))
+    slot_length = 30
+
+    bookingtype_1 = factory.RelatedFactory(BookingTypeFactory, 'calendar')
+    bookingtype_2 = factory.RelatedFactory(BookingTypeFactory, 'calendar')
+
+
+class CalendarPatternsFactory(factory.DjangoModelFactory):
+    FACTORY_FOR = models.Calendar
+    FACTORY_DJANGO_GET_OR_CREATE = ('name',)
+
+    name = 'demo calendar with pattern'
+    description = factory.LazyAttribute(
+        lambda obj: 'description of {}'.format(obj.name))
+    slot_length = 30
+
+    dailyslottimepattern_1 = factory.RelatedFactory(
+        DailySlotTimePatternFactory, 'calendar', day=models.DAYS.we,
+        start_time='9:00', end_time='11:00')
+    dailyslottimepattern_2 = factory.RelatedFactory(
+        DailySlotTimePatternFactory, 'calendar', day=models.DAYS.th,
+        start_time='10:00', end_time='13:00')
+    dailyslottimepattern_3 = factory.RelatedFactory(
+        DailySlotTimePatternFactory, 'calendar', day=models.DAYS.th,
+        start_time='14:00', end_time='16:00')
+    dailyslottimepattern_4 = factory.RelatedFactory(
+        DailySlotTimePatternFactory, 'calendar', day=models.DAYS.fr,
+        start_time='11:00', end_time='13:00')
+
+    bookingtype_1 = factory.RelatedFactory(BookingTypeFactory, 'calendar')
+    bookingtype_2 = factory.RelatedFactory(BookingTypeFactory, 'calendar')
