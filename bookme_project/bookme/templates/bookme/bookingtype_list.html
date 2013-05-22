@@ -1,0 +1,10 @@
+{% extends 'bookme/base.html' %}
+
+{% block content %}
+ <h2>Booking Types</h2>
+    <ul>
+        {% for bookingtype in object_list %}
+            <li>{{ bookingtype.name }}</li>
+        {% endfor %}
+    </ul>
+{% endblock %}>
